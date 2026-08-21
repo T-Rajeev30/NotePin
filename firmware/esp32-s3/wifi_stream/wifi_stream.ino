@@ -17,14 +17,14 @@
 #define DMA_BUF_LEN     256
 #define DMA_BUF_COUNT   8
 
-// ---- Audio conditioning (carried over from the Checkpoint 2 fix) ----
-#define GAIN_SHIFT      16      // 14 clipped badly; 16 = 4x less gain
-#define HP_R            0.97f   // one-pole high-pass, corner ~76 Hz
+// ---- Audio conditioning ----
+#define GAIN_SHIFT      16
+#define HP_R            0.97f
 #define CLIP_THRESHOLD  32700
 
 // ---- Buffering ----
-#define STREAM_BUF_SIZE 65536   // ~2 seconds of jitter absorption
-#define NET_CHUNK       1460    // one TCP payload at standard 1500-byte MTU
+#define STREAM_BUF_SIZE 65536
+#define NET_CHUNK       1460
 
 // ---- Touch control (confirmed in Checkpoint 4a) ----
 #define TOUCH_PIN          7
@@ -49,6 +49,7 @@ static volatile int32_t  peakSeen         = 0;
 static volatile uint32_t bufHighWater     = 0;
 static volatile uint32_t i2sErrors        = 0;
 static volatile bool     streamingEnabled = false;
+static volatile bool     clientReady      = false;   // true only once TCP is actually up
 
 inline bool touchActive() {
   int v = digitalRead(TOUCH_PIN);
@@ -115,11 +116,10 @@ void audioTask(void* param) {
     }
     samplesProcessed += n;
 
-    // Always drain I2S above, but only queue samples while streaming.
-    if (!streamingEnabled) continue;
+    // Only queue once a real TCP connection exists - nothing to lose
+    // while we're merely trying to connect.
+    if (!streamingEnabled || !clientReady) continue;
 
-    // Never block here - a full buffer means the network is behind,
-    // and stalling I2S would corrupt capture. Drop and count instead.
     size_t want = n * sizeof(int16_t);
     size_t got  = xStreamBufferSend(audioStream, out, want, 0);
     if (got < want) overrunCount++;
@@ -133,17 +133,18 @@ void networkTask(void* param) {
   static uint8_t chunk[NET_CHUNK];
 
   for (;;) {
-    // Close the session as soon as streaming stops
     if (!streamingEnabled) {
       if (client.connected()) {
         client.stop();
         Serial.println("Session ended - disconnected.");
       }
+      clientReady = false;
       vTaskDelay(pdMS_TO_TICKS(100));
       continue;
     }
 
     if (!client.connected()) {
+      clientReady = false;
       if (WiFi.status() != WL_CONNECTED) {
         vTaskDelay(pdMS_TO_TICKS(500));
         continue;
@@ -163,6 +164,7 @@ void networkTask(void* param) {
         client.write(hdr, sizeof(hdr));
 
         xStreamBufferReset(audioStream);
+        clientReady = true;
         Serial.println("Connected - streaming.");
       } else {
         Serial.println("Connect failed, retrying in 2s.");
@@ -177,6 +179,7 @@ void networkTask(void* param) {
       if (w != got) {
         Serial.println("Write failed - dropping connection.");
         client.stop();
+        clientReady = false;
       } else {
         bytesSent += w;
       }
@@ -194,7 +197,7 @@ void setup() {
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  WiFi.setSleep(false);   // disable modem sleep - required for low-latency streaming
+  WiFi.setSleep(false);
   Serial.printf("Connecting to \"%s\"", WIFI_SSID);
   t0 = millis();
   while (WiFi.status() != WL_CONNECTED && (millis() - t0) < 20000) {
@@ -244,24 +247,32 @@ void loop() {
     stable = raw;
     if (TOUCH_IS_TOGGLE) {
       streamingEnabled = stable;
-    } else if (stable) {                 // momentary: act on touch-down only
+    } else if (stable) {
       streamingEnabled = !streamingEnabled;
     }
     if (raw == stable) {
+      if (streamingEnabled) {
+        // fresh counters so end-of-session stats describe THIS recording
+        clippedCount = 0;
+        samplesProcessed = 0;
+        peakSeen = 0;
+      }
       Serial.printf(">>> streaming %s\n", streamingEnabled ? "STARTED" : "STOPPED");
     }
   }
 
-  // ---- status LED ----
-  static bool lastLed = !streamingEnabled;
-  static bool lastWifi = true;
+  // ---- status LED: red=no wifi, blue=idle, yellow=connecting, green=streaming ----
+  static bool lastLed = false, lastWifi = true, lastReady = false;
   bool wifiOk = (WiFi.status() == WL_CONNECTED);
-  if (streamingEnabled != lastLed || wifiOk != lastWifi) {
+  bool ready  = clientReady;
+  if (streamingEnabled != lastLed || wifiOk != lastWifi || ready != lastReady) {
     lastLed = streamingEnabled;
     lastWifi = wifiOk;
-    if (!wifiOk)                pixel.setPixelColor(0, pixel.Color(40, 0, 0));   // red
-    else if (streamingEnabled)  pixel.setPixelColor(0, pixel.Color(0, 40, 0));   // green
-    else                        pixel.setPixelColor(0, pixel.Color(0, 0, 30));   // blue
+    lastReady = ready;
+    if (!wifiOk)                          pixel.setPixelColor(0, pixel.Color(40, 0, 0));
+    else if (streamingEnabled && ready)   pixel.setPixelColor(0, pixel.Color(0, 40, 0));
+    else if (streamingEnabled)            pixel.setPixelColor(0, pixel.Color(40, 40, 0));
+    else                                  pixel.setPixelColor(0, pixel.Color(0, 0, 30));
     pixel.show();
   }
 
@@ -271,8 +282,9 @@ void loop() {
     last = millis();
     uint32_t sp = samplesProcessed;
     float clipPct = sp ? (100.0f * (float)clippedCount / (float)sp) : 0.0f;
+    const char* state = !streamingEnabled ? "idle  " : (clientReady ? "STREAM" : "connct");
     Serial.printf("[stat] %s  rssi=%d  sent=%luKB  overruns=%lu  conns=%lu  bufmax=%lu%%  i2serr=%lu  peak=%ld  clip=%.2f%%  heap=%u\n",
-                  streamingEnabled ? "STREAM" : "idle  ",
+                  state,
                   WiFi.RSSI(),
                   (unsigned long)(bytesSent / 1024),
                   (unsigned long)overrunCount,
