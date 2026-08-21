@@ -15,3 +15,7 @@ desktop.ini
 secrets.h
 # Audio test captures
 *.wav
+
+# Backend runtime data - recordings and session metadata, not source
+backend/data/
+backend/node_modules/
