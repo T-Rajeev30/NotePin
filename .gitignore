@@ -11,3 +11,7 @@ desktop.ini
 
 # Secrets
 .env
+# Wi-Fi credentials - never commit
+secrets.h
+# Audio test captures
+*.wav
