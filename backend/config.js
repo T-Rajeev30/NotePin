@@ -3,7 +3,7 @@
 
 module.exports = {
   HTTP_PORT: 3002, // REST API - for the web app / manual testing
-  TCP_PORT: 5001, // raw audio ingest - MUST match SERVER_PORT in the
+  TCP_PORT: 5000, // raw audio ingest - MUST match SERVER_PORT in the
   // ESP32's secrets.h
   DATA_DIR: __dirname + "/data",
   RECORDINGS_DIR: __dirname + "/data/recordings",
