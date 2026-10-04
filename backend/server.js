@@ -11,9 +11,39 @@ const { startMdnsResponder } = require("./mdnsResponder");
 ensureStore();
 
 const app = express();
+const SERVER_STARTED_AT = new Date().toISOString();
+
+// Serves backend/public/index.html (the demo dashboard) at http://localhost:<port>/ -
+// same-origin, so its fetch() calls to /api/... work with zero CORS setup.
+app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
+});
+
+// Summary numbers for the dashboard's stat bar - deliberately cheap to
+// compute (just scans the existing session list) rather than a new store.
+app.get("/api/stats", (req, res) => {
+  const sessions = listSessions();
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const sessionsToday = sessions.filter(
+    (s) => s.startedAt.slice(0, 10) === todayStr,
+  ).length;
+  const processing = sessions.filter(
+    (s) => !s.transcribed && !s.transcriptError,
+  ).length;
+  const totalDurationSec = sessions.reduce(
+    (sum, s) => sum + (s.durationSec || 0),
+    0,
+  );
+  res.json({
+    serverStartedAt: SERVER_STARTED_AT,
+    uptimeSec: Math.round(process.uptime()),
+    totalSessions: sessions.length,
+    sessionsToday,
+    processing,
+    totalDurationSec: Number(totalDurationSec.toFixed(2)),
+  });
 });
 
 app.get("/api/sessions", (req, res) => {

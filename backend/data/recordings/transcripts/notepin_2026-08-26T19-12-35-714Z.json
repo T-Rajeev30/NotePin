@@ -1,0 +1,14 @@
+{
+  "text": "Let's say it is connecting or not connecting.",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 7.0,
+      "text": "Let's say it is connecting or not connecting."
+    }
+  ],
+  "language": "en",
+  "languageProbability": 0.974,
+  "durationSec": 7.15,
+  "transcribeTimeSec": 4.18
+}

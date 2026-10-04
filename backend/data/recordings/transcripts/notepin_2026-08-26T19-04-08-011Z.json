@@ -1,0 +1,19 @@
+{
+  "text": "okay now I'm speaking English and let's see how the transcript of it is generated and how the API and everything will be connected to it",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 4.8,
+      "text": "okay now I'm speaking English and let's see how the transcript of it is"
+    },
+    {
+      "start": 4.8,
+      "end": 10.52,
+      "text": "generated and how the API and everything will be connected to it"
+    }
+  ],
+  "language": "en",
+  "languageProbability": 0.931,
+  "durationSec": 9.42,
+  "transcribeTimeSec": 5.65
+}

@@ -1,0 +1,279 @@
+[
+  {
+    "id": "notepin_2026-08-26T18-21-30-035Z",
+    "deviceAddr": "10.84.181.134:59003",
+    "sampleRate": 16000,
+    "bits": 16,
+    "channels": 1,
+    "filePath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\notepin_2026-08-26T18-21-30-035Z.wav",
+    "startedAt": "2026-08-26T18:21:30.035Z",
+    "endedAt": "2026-08-26T18:21:41.080Z",
+    "durationSec": 10.91,
+    "bytesReceived": 349184,
+    "processed": true,
+    "cleanedPath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\clean\\notepin_2026-08-26T18-21-30-035Z.wav"
+  },
+  {
+    "id": "notepin_2026-08-26T18-22-48-612Z",
+    "deviceAddr": "10.84.181.134:59004",
+    "sampleRate": 16000,
+    "bits": 16,
+    "channels": 1,
+    "filePath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\notepin_2026-08-26T18-22-48-612Z.wav",
+    "startedAt": "2026-08-26T18:22:48.612Z",
+    "endedAt": "2026-08-26T18:23:14.724Z",
+    "durationSec": 26.02,
+    "bytesReceived": 832512,
+    "processed": true,
+    "cleanedPath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\clean\\notepin_2026-08-26T18-22-48-612Z.wav"
+  },
+  {
+    "id": "notepin_2026-08-26T18-51-20-203Z",
+    "deviceAddr": "10.84.181.134:59150",
+    "sampleRate": 16000,
+    "bits": 16,
+    "channels": 1,
+    "filePath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\notepin_2026-08-26T18-51-20-203Z.wav",
+    "startedAt": "2026-08-26T18:51:20.203Z",
+    "endedAt": "2026-08-26T18:51:27.324Z",
+    "durationSec": 5.87,
+    "bytesReceived": 187840,
+    "processed": true,
+    "cleanedPath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\clean\\notepin_2026-08-26T18-51-20-203Z.wav"
+  },
+  {
+    "id": "notepin_2026-08-26T18-54-20-088Z",
+    "deviceAddr": "10.84.181.134:59151",
+    "sampleRate": 16000,
+    "bits": 16,
+    "channels": 1,
+    "filePath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\notepin_2026-08-26T18-54-20-088Z.wav",
+    "startedAt": "2026-08-26T18:54:20.088Z",
+    "endedAt": "2026-08-26T18:54:39.017Z",
+    "durationSec": 17.03,
+    "bytesReceived": 544968,
+    "processed": true,
+    "cleanedPath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\clean\\notepin_2026-08-26T18-54-20-088Z.wav",
+    "transcribed": false,
+    "transcript": null,
+    "transcriptError": null
+  },
+  {
+    "id": "notepin_2026-08-26T19-00-47-057Z",
+    "deviceAddr": "10.84.181.134:59152",
+    "sampleRate": 16000,
+    "bits": 16,
+    "channels": 1,
+    "filePath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\notepin_2026-08-26T19-00-47-057Z.wav",
+    "startedAt": "2026-08-26T19:00:47.057Z",
+    "endedAt": "2026-08-26T19:01:02.327Z",
+    "durationSec": 12.68,
+    "bytesReceived": 405712,
+    "processed": true,
+    "cleanedPath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\clean\\notepin_2026-08-26T19-00-47-057Z.wav",
+    "transcribed": true,
+    "transcript": {
+      "text": "आमेलोको कुछे नहीं में लिँडता है, यहा, मैं सुभे, आज सुभे एक डंकी मेरो को छोले अदवे खाने, छोले पटूए खाने, बग़े पवॉखले, चिप दो सा मिला. चिप दो सा मिला है, सुभा में को.",
+      "segments": [
+        {
+          "start": 0,
+          "end": 11.26,
+          "text": "आमेलोको कुछे नहीं में लिँडता है, यहा, मैं सुभे, आज सुभे एक डंकी मेरो को छोले अदवे खाने, छोले पटूए खाने, बग़े पवॉखले, चिप दो सा मिला."
+        },
+        {
+          "start": 11.26,
+          "end": 12.82,
+          "text": "चिप दो सा मिला है, सुभा में को."
+        }
+      ],
+      "language": "hi",
+      "languageProbability": 0.967,
+      "durationSec": 12.68,
+      "transcribeTimeSec": 66.07
+    },
+    "transcriptError": null
+  },
+  {
+    "id": "notepin_2026-08-26T19-04-08-011Z",
+    "deviceAddr": "10.84.181.134:59153",
+    "sampleRate": 16000,
+    "bits": 16,
+    "channels": 1,
+    "filePath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\notepin_2026-08-26T19-04-08-011Z.wav",
+    "startedAt": "2026-08-26T19:04:08.011Z",
+    "endedAt": "2026-08-26T19:04:17.478Z",
+    "durationSec": 9.42,
+    "bytesReceived": 301568,
+    "processed": true,
+    "cleanedPath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\clean\\notepin_2026-08-26T19-04-08-011Z.wav",
+    "transcribed": true,
+    "transcript": {
+      "text": "okay now I'm speaking English and let's see how the transcript of it is generated and how the API and everything will be connected to it",
+      "segments": [
+        {
+          "start": 0,
+          "end": 4.8,
+          "text": "okay now I'm speaking English and let's see how the transcript of it is"
+        },
+        {
+          "start": 4.8,
+          "end": 10.52,
+          "text": "generated and how the API and everything will be connected to it"
+        }
+      ],
+      "language": "en",
+      "languageProbability": 0.931,
+      "durationSec": 9.42,
+      "transcribeTimeSec": 5.65
+    },
+    "transcriptError": null
+  },
+  {
+    "id": "notepin_2026-08-26T19-07-45-173Z",
+    "deviceAddr": "10.84.181.134:57186",
+    "sampleRate": 16000,
+    "bits": 16,
+    "channels": 1,
+    "filePath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\notepin_2026-08-26T19-07-45-173Z.wav",
+    "startedAt": "2026-08-26T19:07:45.173Z",
+    "endedAt": "2026-08-26T19:07:54.833Z",
+    "durationSec": 9.57,
+    "bytesReceived": 306176,
+    "processed": true,
+    "cleanedPath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\clean\\notepin_2026-08-26T19-07-45-173Z.wav",
+    "transcribed": true,
+    "transcript": {
+      "text": "Okay, I think it has been connected and let's see how does it work and I want to show it to the HTML page and let's see in English will it work fine or not.",
+      "segments": [
+        {
+          "start": 0,
+          "end": 10,
+          "text": "Okay, I think it has been connected and let's see how does it work and I want to show it to the HTML page and let's see in English will it work fine or not."
+        }
+      ],
+      "language": "en",
+      "languageProbability": 0.9,
+      "durationSec": 9.57,
+      "transcribeTimeSec": 7.01
+    },
+    "transcriptError": null
+  },
+  {
+    "id": "notepin_2026-08-26T19-08-58-880Z",
+    "deviceAddr": "10.84.181.134:57187",
+    "sampleRate": 16000,
+    "bits": 16,
+    "channels": 1,
+    "filePath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\notepin_2026-08-26T19-08-58-880Z.wav",
+    "startedAt": "2026-08-26T19:08:58.880Z",
+    "endedAt": "2026-08-26T19:09:06.925Z",
+    "durationSec": 7.92,
+    "bytesReceived": 253440,
+    "processed": true,
+    "cleanedPath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\clean\\notepin_2026-08-26T19-08-58-880Z.wav",
+    "transcribed": true,
+    "transcript": {
+      "text": "यह ती रब � off शनत्याःगादाःईा Senior ολ़ईictions",
+      "segments": [
+        {
+          "start": 0.66,
+          "end": 2.82,
+          "text": "यह ती रब � off"
+        },
+        {
+          "start": 4,
+          "end": 8,
+          "text": "शनत्याःगादाःईा Senior"
+        },
+        {
+          "start": 26.68,
+          "end": 28.18,
+          "text": "ολ़ईictions"
+        }
+      ],
+      "language": "hi",
+      "languageProbability": 0.962,
+      "durationSec": 7.92,
+      "transcribeTimeSec": 47.24
+    },
+    "transcriptError": null
+  },
+  {
+    "id": "notepin_2026-08-26T19-10-32-943Z",
+    "deviceAddr": "10.84.181.134:57188",
+    "sampleRate": 16000,
+    "bits": 16,
+    "channels": 1,
+    "filePath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\notepin_2026-08-26T19-10-32-943Z.wav",
+    "startedAt": "2026-08-26T19:10:32.943Z",
+    "endedAt": "2026-08-26T19:10:47.367Z",
+    "durationSec": 13.1,
+    "bytesReceived": 419328,
+    "processed": true,
+    "cleanedPath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\clean\\notepin_2026-08-26T19-10-32-943Z.wav",
+    "transcribed": true,
+    "transcript": {
+      "text": "",
+      "segments": [],
+      "language": "en",
+      "languageProbability": 0.403,
+      "durationSec": 13.1,
+      "transcribeTimeSec": 4.78
+    },
+    "transcriptError": null
+  },
+  {
+    "id": "notepin_2026-08-26T19-12-35-714Z",
+    "deviceAddr": "10.84.181.134:57189",
+    "sampleRate": 16000,
+    "bits": 16,
+    "channels": 1,
+    "filePath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\notepin_2026-08-26T19-12-35-714Z.wav",
+    "startedAt": "2026-08-26T19:12:35.714Z",
+    "endedAt": "2026-08-26T19:12:42.972Z",
+    "durationSec": 7.15,
+    "bytesReceived": 228864,
+    "processed": true,
+    "cleanedPath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\clean\\notepin_2026-08-26T19-12-35-714Z.wav",
+    "transcribed": true,
+    "transcript": {
+      "text": "Let's say it is connecting or not connecting.",
+      "segments": [
+        {
+          "start": 0,
+          "end": 7,
+          "text": "Let's say it is connecting or not connecting."
+        }
+      ],
+      "language": "en",
+      "languageProbability": 0.974,
+      "durationSec": 7.15,
+      "transcribeTimeSec": 4.18
+    },
+    "transcriptError": null
+  },
+  {
+    "id": "notepin_2026-08-26T19-12-51-794Z",
+    "deviceAddr": "10.84.181.134:57190",
+    "sampleRate": 16000,
+    "bits": 16,
+    "channels": 1,
+    "filePath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\notepin_2026-08-26T19-12-51-794Z.wav",
+    "startedAt": "2026-08-26T19:12:51.794Z",
+    "endedAt": "2026-08-26T19:12:58.359Z",
+    "durationSec": 5.93,
+    "bytesReceived": 189776,
+    "processed": true,
+    "cleanedPath": "X:\\notepin\\NotePin\\backend\\data\\recordings\\clean\\notepin_2026-08-26T19-12-51-794Z.wav",
+    "transcribed": true,
+    "transcript": {
+      "text": "",
+      "segments": [],
+      "language": "nn",
+      "languageProbability": 0.494,
+      "durationSec": 5.93,
+      "transcribeTimeSec": 45.99
+    },
+    "transcriptError": null
+  }
+]

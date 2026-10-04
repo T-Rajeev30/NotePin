@@ -1,0 +1,24 @@
+{
+  "text": "यह ती रब � off शनत्याःगादाःईा Senior ολ़ईictions",
+  "segments": [
+    {
+      "start": 0.66,
+      "end": 2.82,
+      "text": "यह ती रब � off"
+    },
+    {
+      "start": 4.0,
+      "end": 8.0,
+      "text": "शनत्याःगादाःईा Senior"
+    },
+    {
+      "start": 26.68,
+      "end": 28.18,
+      "text": "ολ़ईictions"
+    }
+  ],
+  "language": "hi",
+  "languageProbability": 0.962,
+  "durationSec": 7.92,
+  "transcribeTimeSec": 47.24
+}

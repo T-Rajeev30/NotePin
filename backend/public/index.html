@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NotePin — Live Dashboard</title>
+    <style>
+      :root {
+        --bg: #f7f5f2;
+        --panel: #ffffff;
+        --border: #e5e0d8;
+        --text: #1f1c18;
+        --text-dim: #6b6459;
+        --copper: #b5651d;
+        --copper-soft: #f3e3d3;
+        --teal: #1f7a6c;
+        --teal-soft: #dcf0ec;
+        --red: #b23a3a;
+        --red-soft: #f6e0e0;
+        --amber: #a67c1f;
+        --amber-soft: #f5edd6;
+        --shadow:
+          0 1px 2px rgba(31, 28, 24, 0.06), 0 4px 16px rgba(31, 28, 24, 0.05);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        line-height: 1.5;
+      }
+
+      header {
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        padding: 20px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand-mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--copper), #8a4a15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+      .brand h1 {
+        font-size: 19px;
+        margin: 0;
+        letter-spacing: -0.01em;
+      }
+      .brand p {
+        font-size: 13px;
+        color: var(--text-dim);
+        margin: 2px 0 0;
+      }
+
+      .live-badge {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12.5px;
+        color: var(--text-dim);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        padding: 6px 12px;
+        border-radius: 999px;
+      }
+      .live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--teal);
+        box-shadow: 0 0 0 0 rgba(31, 122, 108, 0.5);
+        animation: pulse 2s infinite;
+      }
+      .live-dot.offline {
+        background: var(--red);
+        animation: none;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(31, 122, 108, 0.45);
+        }
+        70% {
+          box-shadow: 0 0 0 7px rgba(31, 122, 108, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(31, 122, 108, 0);
+        }
+      }
+
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 28px 32px 64px;
+      }
+
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+      .stat-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 18px;
+        box-shadow: var(--shadow);
+      }
+      .stat-card .num {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      .stat-card .label {
+        font-size: 12.5px;
+        color: var(--text-dim);
+        margin-top: 2px;
+      }
+
+      section {
+        margin-bottom: 36px;
+      }
+      .section-title {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-dim);
+        font-weight: 600;
+        margin: 0 0 14px;
+      }
+
+      /* --- pipeline diagram --- */
+      .pipeline {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 22px 20px;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 0;
+        overflow-x: auto;
+      }
+      .stage {
+        flex: 1 1 0;
+        min-width: 118px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 6px;
+        padding: 0 6px;
+      }
+      .stage .icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: var(--copper-soft);
+        color: var(--copper);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+      .stage .name {
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .stage .desc {
+        font-size: 11.5px;
+        color: var(--text-dim);
+      }
+      .arrow {
+        color: var(--border);
+        font-size: 20px;
+        flex: 0 0 auto;
+        padding: 0 2px;
+        align-self: center;
+        margin-top: -30px;
+      }
+
+      /* --- sessions --- */
+      .session-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px 22px;
+        margin-bottom: 14px;
+        box-shadow: var(--shadow);
+        animation: fadeIn 0.4s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .session-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+      .session-when {
+        font-size: 14.5px;
+        font-weight: 600;
+      }
+      .session-meta {
+        font-size: 12.5px;
+        color: var(--text-dim);
+        margin-top: 2px;
+      }
+
+      .badges {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .badge {
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 4px 9px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+      }
+      .badge.ok {
+        background: var(--teal-soft);
+        color: var(--teal);
+      }
+      .badge.warn {
+        background: var(--amber-soft);
+        color: var(--amber);
+      }
+      .badge.bad {
+        background: var(--red-soft);
+        color: var(--red);
+      }
+      .badge .dot-spin {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: blink 1.1s infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.25;
+        }
+      }
+
+      .transcript-box {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 14.5px;
+        margin: 12px 0;
+        white-space: pre-wrap;
+      }
+      .transcript-empty {
+        color: var(--text-dim);
+        font-style: italic;
+        font-size: 13.5px;
+      }
+
+      .audio-row {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .audio-block {
+        flex: 1 1 220px;
+      }
+      .audio-block .lbl {
+        font-size: 11.5px;
+        color: var(--text-dim);
+        margin-bottom: 4px;
+        font-weight: 600;
+      }
+      audio {
+        width: 100%;
+        height: 34px;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-dim);
+        background: var(--panel);
+        border: 1px dashed var(--border);
+        border-radius: 14px;
+      }
+      .empty-state .big {
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+
+      footer {
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-dim);
+        padding: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <div class="brand-mark">N</div>
+        <div>
+          <h1>NotePin</h1>
+          <p>Wearable voice recorder — live pipeline dashboard</p>
+        </div>
+      </div>
+      <div class="live-badge">
+        <span class="live-dot" id="liveDot"></span>
+        <span id="liveText">Connecting…</span>
+      </div>
+    </header>
+
+    <main>
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card">
+          <div class="num" id="statTotal">—</div>
+          <div class="label">Total recordings</div>
+        </div>
+        <div class="stat-card">
+          <div class="num" id="statToday">—</div>
+          <div class="label">Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="num" id="statProcessing">—</div>
+          <div class="label">Processing now</div>
+        </div>
+        <div class="stat-card">
+          <div class="num" id="statDuration">—</div>
+          <div class="label">Total recorded</div>
+        </div>
+        <div class="stat-card">
+          <div class="num" id="statUptime">—</div>
+          <div class="label">Server uptime</div>
+        </div>
+      </div>
+
+      <section>
+        <div class="section-title">How it works</div>
+        <div class="pipeline">
+          <div class="stage">
+            <div class="icon">🎙</div>
+            <div class="name">Device</div>
+            <div class="desc">Touch to record, ESP32-S3 + I2S mic</div>
+          </div>
+          <div class="arrow">→</div>
+          <div class="stage">
+            <div class="icon">📡</div>
+            <div class="name">Wi-Fi + mDNS</div>
+            <div class="desc">Auto-discovers this server, no fixed IP</div>
+          </div>
+          <div class="arrow">→</div>
+          <div class="stage">
+            <div class="icon">📥</div>
+            <div class="name">Ingest</div>
+            <div class="desc">Streams raw audio over TCP, saved as WAV</div>
+          </div>
+          <div class="arrow">→</div>
+          <div class="stage">
+            <div class="icon">🧹</div>
+            <div class="name">Denoise</div>
+            <div class="desc">DeepFilterNet removes background noise</div>
+          </div>
+          <div class="arrow">→</div>
+          <div class="stage">
+            <div class="icon">📝</div>
+            <div class="name">Transcribe</div>
+            <div class="desc">faster-whisper, runs fully offline</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">Recordings</div>
+        <div id="sessionList"></div>
+      </section>
+    </main>
+
+    <footer>NotePin dashboard · updates automatically every few seconds</footer>
+
+    <script>
+      const POLL_MS = 4000;
+      const renderedIds = new Set();
+      const sessionListEl = document.getElementById("sessionList");
+      let sawEmptyState = false;
+
+      function fmtWhen(iso) {
+        const d = new Date(iso);
+        return d.toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        });
+      }
+
+      function fmtDuration(sec) {
+        if (sec < 60) return sec.toFixed(1) + "s";
+        const m = Math.floor(sec / 60),
+          s = Math.round(sec % 60);
+        return m + "m " + s + "s";
+      }
+
+      function fmtUptime(sec) {
+        const h = Math.floor(sec / 3600),
+          m = Math.floor((sec % 3600) / 60);
+        if (h > 0) return h + "h " + m + "m";
+        return m + "m";
+      }
+
+      function denoiseBadge(s) {
+        if (s.processed) return '<span class="badge ok">✓ Denoised</span>';
+        if (s.processingError)
+          return (
+            '<span class="badge warn" title="' +
+            escapeAttr(s.processingError) +
+            '">⚠ Denoise skipped, used original</span>'
+          );
+        return '<span class="badge warn"><span class="dot-spin"></span> Denoising…</span>';
+      }
+
+      function transcribeBadge(s) {
+        if (s.transcribed && s.transcript) {
+          const lang = s.transcript.language
+            ? s.transcript.language.toUpperCase()
+            : "";
+          return (
+            '<span class="badge ok">✓ Transcribed' +
+            (lang ? " · " + lang : "") +
+            "</span>"
+          );
+        }
+        if (s.transcriptError)
+          return (
+            '<span class="badge bad" title="' +
+            escapeAttr(s.transcriptError) +
+            '">✕ Transcription failed</span>'
+          );
+        const denoiseDone = s.processed || s.processingError;
+        if (denoiseDone)
+          return '<span class="badge warn"><span class="dot-spin"></span> Transcribing…</span>';
+        return '<span class="badge warn"><span class="dot-spin"></span> Queued</span>';
+      }
+
+      function escapeHtml(str) {
+        return (str || "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      }
+      function escapeAttr(str) {
+        return escapeHtml(str).replace(/\n/g, " ");
+      }
+
+      function sessionCardHtml(s) {
+        const transcriptText =
+          s.transcribed && s.transcript && s.transcript.text
+            ? '<div class="transcript-box">' +
+              escapeHtml(s.transcript.text) +
+              "</div>"
+            : s.transcriptError
+              ? '<div class="transcript-box transcript-empty">Transcription failed: ' +
+                escapeHtml(s.transcriptError) +
+                "</div>"
+              : '<div class="transcript-box transcript-empty">Transcript will appear here once processing finishes…</div>';
+
+        const cleanAudio = s.processed
+          ? '<div class="audio-block"><div class="lbl">Denoised</div><audio controls src="/api/sessions/' +
+            s.id +
+            '/audio?variant=clean"></audio></div>'
+          : "";
+
+        return (
+          '<div class="session-card" data-id="' +
+          s.id +
+          '">' +
+          '<div class="session-head">' +
+          "<div>" +
+          '<div class="session-when">' +
+          fmtWhen(s.startedAt) +
+          "</div>" +
+          '<div class="session-meta">' +
+          fmtDuration(s.durationSec) +
+          " · " +
+          s.sampleRate +
+          "Hz / " +
+          s.bits +
+          "-bit / " +
+          (s.channels === 1 ? "mono" : s.channels + "ch") +
+          "</div>" +
+          "</div>" +
+          '<div class="badges">' +
+          denoiseBadge(s) +
+          transcribeBadge(s) +
+          "</div>" +
+          "</div>" +
+          transcriptText +
+          '<div class="audio-row">' +
+          '<div class="audio-block"><div class="lbl">Original</div><audio controls src="/api/sessions/' +
+          s.id +
+          '/audio"></audio></div>' +
+          cleanAudio +
+          "</div>" +
+          "</div>"
+        );
+      }
+
+      function upsertSession(s) {
+        const existing = sessionListEl.querySelector(
+          '[data-id="' + s.id + '"]',
+        );
+        if (existing) {
+          // Don't clobber a card whose audio might be mid-playback - only
+          // replace it if its processing status actually changed.
+          if (
+            existing.dataset.snapshot !==
+            JSON.stringify([
+              s.processed,
+              s.processingError,
+              s.transcribed,
+              s.transcriptError,
+            ])
+          ) {
+            const fresh = document.createElement("div");
+            fresh.innerHTML = sessionCardHtml(s);
+            const node = fresh.firstElementChild;
+            node.dataset.snapshot = JSON.stringify([
+              s.processed,
+              s.processingError,
+              s.transcribed,
+              s.transcriptError,
+            ]);
+            existing.replaceWith(node);
+          }
+        } else {
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = sessionCardHtml(s);
+          const node = wrapper.firstElementChild;
+          node.dataset.snapshot = JSON.stringify([
+            s.processed,
+            s.processingError,
+            s.transcribed,
+            s.transcriptError,
+          ]);
+          sessionListEl.prepend(node);
+        }
+        renderedIds.add(s.id);
+      }
+
+      async function poll() {
+        try {
+          const [statsRes, sessionsRes] = await Promise.all([
+            fetch("/api/stats"),
+            fetch("/api/sessions"),
+          ]);
+          if (!statsRes.ok || !sessionsRes.ok) throw new Error("bad response");
+          const stats = await statsRes.json();
+          const sessions = await sessionsRes.json();
+
+          document.getElementById("statTotal").textContent =
+            stats.totalSessions;
+          document.getElementById("statToday").textContent =
+            stats.sessionsToday;
+          document.getElementById("statProcessing").textContent =
+            stats.processing;
+          document.getElementById("statDuration").textContent = fmtDuration(
+            stats.totalDurationSec,
+          );
+          document.getElementById("statUptime").textContent = fmtUptime(
+            stats.uptimeSec,
+          );
+
+          document.getElementById("liveDot").classList.remove("offline");
+          document.getElementById("liveText").textContent =
+            "Live — updated " + new Date().toLocaleTimeString();
+
+          if (sessions.length === 0) {
+            if (!sawEmptyState) {
+              sessionListEl.innerHTML =
+                '<div class="empty-state"><div class="big">🎙</div>No recordings yet — touch the device to start one.</div>';
+              sawEmptyState = true;
+            }
+          } else {
+            if (sawEmptyState) {
+              sessionListEl.innerHTML = "";
+              sawEmptyState = false;
+            }
+            // newest first, matches API order
+            for (const s of sessions) upsertSession(s);
+          }
+        } catch (e) {
+          document.getElementById("liveDot").classList.add("offline");
+          document.getElementById("liveText").textContent =
+            "Disconnected — retrying…";
+        }
+      }
+
+      poll();
+      setInterval(poll, POLL_MS);
+    </script>
+  </body>
+</html>

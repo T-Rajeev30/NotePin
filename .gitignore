@@ -1,21 +1,12 @@
-# Arduino IDE
-build/
-*.hex
-
-# Windows
-Thumbs.db
-desktop.ini
-
-# Logs
-*.log
-
-# Secrets
+.pio/
+.vscode/
+**/.DS_Store
+**/Thumbs.db
 .env
-# Wi-Fi credentials - never commit
-secrets.h
-# Audio test captures
-*.wav
-
-# Backend runtime data - recordings and session metadata, not source
-backend/data/
+.env.*
+!.env.example
+firmware/include/secrets.h
 backend/node_modules/
+web/node_modules/
+web/.next/
+*.log

@@ -44,6 +44,15 @@ function addSession(session) {
   return session;
 }
 
+function updateSession(id, patch) {
+  const sessions = readAll();
+  const idx = sessions.findIndex((s) => s.id === id);
+  if (idx === -1) return null;
+  sessions[idx] = { ...sessions[idx], ...patch };
+  writeAll(sessions);
+  return sessions[idx];
+}
+
 function listSessions() {
   return readAll().sort((a, b) => b.startedAt.localeCompare(a.startedAt));
 }
@@ -52,4 +61,10 @@ function getSession(id) {
   return readAll().find((s) => s.id === id) || null;
 }
 
-module.exports = { ensureStore, addSession, listSessions, getSession };
+module.exports = {
+  ensureStore,
+  addSession,
+  updateSession,
+  listSessions,
+  getSession,
+};

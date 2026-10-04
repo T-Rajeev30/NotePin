@@ -6,7 +6,7 @@
 #include "freertos/task.h"
 #include "freertos/stream_buffer.h"
 #include "secrets.h"
-
+#include <ESPmDNS.h>
 // ---- I2S pins (verified in Checkpoint 2) ----
 #define I2S_SCK   4
 #define I2S_WS    5

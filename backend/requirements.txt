@@ -1,0 +1,15 @@
+# Pinned to a version pair that actually works together - the default
+# `pip install torch torchaudio` resolves to a mismatched pair that breaks
+# DeepFilterNet with "ModuleNotFoundError: No module named 'torchaudio.backend'".
+deepfilternet==0.5.6
+torch==2.0.1
+torchaudio==2.0.2
+
+# torchaudio has no built-in audio file I/O on Windows - it needs this as
+# its backend, or every call fails with "No audio I/O backend is available."
+soundfile>=0.12
+
+# Speech-to-text (Checkpoint 3a) - fast, quantized Whisper re-implementation.
+# No known problematic default-resolution pairing like torch/torchaudio above,
+# so no version pin needed here.
+faster-whisper

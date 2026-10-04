@@ -9,18 +9,28 @@
 //      how the device signals "session ended" - see wifi_stream.ino).
 //
 // This writes each session straight to a WAV file on disk (streaming, not
-// buffered in memory, so a long recording doesn't blow up RAM) and patches
-// the WAV header's size fields once the stream ends and the true length
-// is known.
+// buffered in memory, so a long recording doesn't blow up RAM), patches the
+// WAV header's size fields once the stream ends, then kicks off a DeepFilterNet
+// noise-reduction pass on the finished file as a background step, followed by
+// a faster-whisper transcription pass - neither blocks new incoming
+// connections, since child_process.spawn is async.
 
 const net = require("net");
 const fs = require("fs");
 const path = require("path");
+const { spawn } = require("child_process");
 const config = require("./config");
-const { addSession } = require("./sessionStore");
+const { addSession, updateSession } = require("./sessionStore");
 
 const HEADER_MAGIC = "NPIN";
 const WAV_HEADER_BYTES = 44;
+
+// Invoked via `python -m df.enhance` rather than the `deepFilter` console
+// script directly - sidesteps a common Windows issue where pip's Scripts
+// folder (holding deepFilter.exe) isn't on PATH, especially with the
+// Microsoft Store Python distribution. `python` itself is already on PATH
+// if you've been able to run the scripts\*.py files earlier in this project.
+const PYTHON_BIN = process.env.PYTHON_BIN || "python";
 
 function writeWavHeader(fd, sampleRate, bitsPerSample, channels) {
   const byteRate = sampleRate * channels * (bitsPerSample / 8);
@@ -56,6 +66,140 @@ function patchWavHeader(filePath, dataBytes) {
   fs.writeSync(fd, subchunk2Size, 0, 4, 40);
 
   fs.closeSync(fd);
+}
+
+// Runs DeepFilterNet on a finished session's WAV file. Fire-and-forget from
+// the caller's point of view - updates the session record when done rather
+// than making anything wait. The FIRST call after installing DeepFilterNet
+// will be slow (it downloads and caches the model weights); every call
+// after that reuses the cached model and runs fully offline.
+function runNoiseReduction(session) {
+  const cleanDir = path.join(config.RECORDINGS_DIR, "clean");
+  if (!fs.existsSync(cleanDir)) fs.mkdirSync(cleanDir, { recursive: true });
+
+  console.log(`[denoise] starting for ${session.id}`);
+
+  const proc = spawn(
+    PYTHON_BIN,
+    [
+      "-m",
+      "df.enhance",
+      "--output-dir",
+      cleanDir,
+      "--no-suffix",
+      session.filePath,
+    ],
+    {
+      windowsHide: true,
+    },
+  );
+
+  let stderr = "";
+  proc.stderr.on("data", (d) => {
+    stderr += d.toString();
+    process.stderr.write(d); // show progress (e.g. model download) live, not just at the end
+  });
+
+  proc.on("close", (code) => {
+    const expectedOut = path.join(cleanDir, path.basename(session.filePath));
+    // Transcribe whichever audio is actually best: the cleaned version if
+    // denoise succeeded, otherwise fall back to the original recording -
+    // a transcript from noisy audio is still better than no transcript.
+    let transcribeInput = session.filePath;
+    if (code === 0 && fs.existsSync(expectedOut)) {
+      updateSession(session.id, { processed: true, cleanedPath: expectedOut });
+      console.log(`[denoise] done for ${session.id}`);
+      transcribeInput = expectedOut;
+    } else {
+      updateSession(session.id, {
+        processed: false,
+        processingError: stderr.trim().slice(-500) || `exit code ${code}`,
+      });
+      console.error(`[denoise] FAILED for ${session.id} (exit ${code})`);
+      if (stderr) console.error(stderr.trim().slice(-1000));
+    }
+    runTranscription(session, transcribeInput);
+  });
+
+  proc.on("error", (err) => {
+    updateSession(session.id, {
+      processed: false,
+      processingError: err.message,
+    });
+    console.error(
+      `[denoise] could not start "${PYTHON_BIN}" - is Python on PATH? ${err.message}`,
+    );
+    // Denoise couldn't even launch - still worth trying to transcribe the
+    // original recording rather than giving up on the whole session.
+    runTranscription(session, session.filePath);
+  });
+}
+
+// Runs faster-whisper on the given audio file (the cleaned version when
+// available, otherwise the original) and stores the transcript on the
+// session. Same fire-and-forget pattern as runNoiseReduction - doesn't
+// block new incoming connections. The FIRST call downloads and caches the
+// Whisper model (~500MB for the default "small" size); every call after
+// that reuses the cached model and runs fully offline.
+function runTranscription(session, inputPath) {
+  const transcriptDir = path.join(config.RECORDINGS_DIR, "transcripts");
+  if (!fs.existsSync(transcriptDir))
+    fs.mkdirSync(transcriptDir, { recursive: true });
+
+  const scriptPath = path.join(__dirname, "transcribe.py");
+  const outJsonPath = path.join(transcriptDir, `${session.id}.json`);
+
+  console.log(`[transcribe] starting for ${session.id}`);
+
+  const proc = spawn(PYTHON_BIN, [scriptPath, inputPath, outJsonPath], {
+    windowsHide: true,
+  });
+
+  let stderr = "";
+  proc.stderr.on("data", (d) => {
+    stderr += d.toString();
+  });
+
+  proc.on("close", (code) => {
+    if (code === 0 && fs.existsSync(outJsonPath)) {
+      try {
+        const transcript = JSON.parse(fs.readFileSync(outJsonPath, "utf8"));
+        updateSession(session.id, {
+          transcribed: true,
+          transcript,
+          transcriptError: null,
+        });
+        console.log(
+          `[transcribe] done for ${session.id} (${transcript.text.length} chars)`,
+        );
+      } catch (e) {
+        updateSession(session.id, {
+          transcribed: false,
+          transcriptError: `failed to read result: ${e.message}`,
+        });
+        console.error(
+          `[transcribe] FAILED reading result for ${session.id}: ${e.message}`,
+        );
+      }
+    } else {
+      updateSession(session.id, {
+        transcribed: false,
+        transcriptError: stderr.trim().slice(-500) || `exit code ${code}`,
+      });
+      console.error(`[transcribe] FAILED for ${session.id} (exit ${code})`);
+      if (stderr) console.error(stderr.trim().slice(-1000));
+    }
+  });
+
+  proc.on("error", (err) => {
+    updateSession(session.id, {
+      transcribed: false,
+      transcriptError: err.message,
+    });
+    console.error(
+      `[transcribe] could not start "${PYTHON_BIN}" - is Python on PATH? ${err.message}`,
+    );
+  });
 }
 
 function startTcpIngest() {
@@ -146,11 +290,18 @@ function startTcpIngest() {
         endedAt: new Date().toISOString(),
         durationSec: Number(durationSec.toFixed(2)),
         bytesReceived: bytesWritten,
+        processed: false,
+        cleanedPath: null,
+        transcribed: false,
+        transcript: null,
+        transcriptError: null,
       };
       addSession(session);
       console.log(
         `[ingest] session saved: ${session.id} (${session.durationSec}s, ${bytesWritten} bytes)`,
       );
+
+      runNoiseReduction(session);
     });
 
     socket.on("error", (err) => {
@@ -158,9 +309,13 @@ function startTcpIngest() {
     });
   });
 
-  server.listen(config.TCP_PORT, () => {
+  // Bind IPv4 explicitly - the ESP32 only ever connects over IPv4 (mDNS
+  // resolves an IPv4 IPAddress, and the secrets.h fallback is a plain
+  // IPv4 string), so there's no reason to attempt the default dual-stack
+  // "::" bind, which is what was actually failing on Windows here.
+  server.listen(config.TCP_PORT, "0.0.0.0", () => {
     console.log(
-      `[ingest] listening for NotePin audio on TCP ${config.TCP_PORT}`,
+      `[ingest] listening for NotePin audio on TCP ${config.TCP_PORT} (IPv4)`,
     );
   });
 

@@ -2,12 +2,10 @@
   "name": "notepin-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "NotePin Phase 2 backend - receives audio sessions from the ESP32-S3 device and exposes them over a REST API.",
-  "main": "server.js",
+  "engines": { "node": ">=18" },
   "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.19.2"
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test"
   }
 }
