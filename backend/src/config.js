@@ -26,6 +26,16 @@ function load() {
     maxConnections: int("NOTEPIN_MAX_CONNECTIONS", 8),
     maxRecordingSeconds: int("NOTEPIN_MAX_RECORDING_SECONDS", 1800),
     idleTimeoutMs: int("NOTEPIN_IDLE_TIMEOUT_MS", 15000),
+    deepgramKey: e.DEEPGRAM_API_KEY || "",
+    deepgramModel: e.DEEPGRAM_MODEL || "nova-3",
+    deepgramLanguage: e.DEEPGRAM_LANGUAGE || "multi",
+    requireAuth: ["1", "true", "yes"].includes(
+      String(e.NOTEPIN_REQUIRE_AUTH || "").toLowerCase(),
+    ),
+    devicesFile: path.resolve(
+      e.NOTEPIN_DEVICES_FILE ||
+        path.join(__dirname, "..", "data", "devices.json"),
+    ),
     allowedIps: (e.NOTEPIN_ALLOWED_IPS || "")
       .split(",")
       .map((s) => s.trim())
