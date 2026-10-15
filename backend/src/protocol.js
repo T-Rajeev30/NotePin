@@ -8,14 +8,16 @@
 //    [0..11] same as above but magic "NPN2"
 //    [12..27] device id, ASCII, NUL padded (16 bytes)
 //    then: server -> 16-byte nonce, device -> HMAC-SHA256(key, nonce || deviceId16) (32 bytes),
-//          server -> 1 byte (0x01 accepted / 0x00 rejected), then raw PCM.
+//          server -> 1 byte (0x01 accepted / 0x00 rejected), then the audio payload:
+//            bits == 16: raw PCM s16le mono
+//            bits == 4 : IMA ADPCM units (see adpcm.js), optional silence runs (VAD)
 const HEADER_SIZE = 12;
 const HEADER_V2_SIZE = 28;
 const MAGIC = "NPIN";
 const MAGIC_V2 = "NPN2";
 const NONCE_SIZE = 16;
 const MAC_SIZE = 32;
-const SUPPORTED = { sampleRate: 16000, bits: 16, channels: 1 };
+const SUPPORTED = { sampleRate: 16000, bits: [16, 4], channels: 1 };
 
 // Bytes needed before the header can be parsed; 0 = need at least 4 bytes first.
 function headerSizeFor(buf) {
@@ -49,11 +51,13 @@ function validateHeader(h) {
     return `bad magic ${JSON.stringify(h.magic)}`;
   if (h.sampleRate !== SUPPORTED.sampleRate)
     return `unsupported sample_rate=${h.sampleRate}`;
-  if (h.bits !== SUPPORTED.bits) return `unsupported bits=${h.bits}`;
+  if (!SUPPORTED.bits.includes(h.bits)) return `unsupported bits=${h.bits}`;
   if (h.channels !== SUPPORTED.channels)
     return `unsupported channels=${h.channels}`;
   if (h.magic === MAGIC_V2 && !/^[A-Za-z0-9._-]{1,16}$/.test(h.deviceId || ""))
     return "bad device id";
+  if (h.magic === MAGIC && h.bits !== 16)
+    return "legacy NPIN supports 16-bit PCM only";
   return null;
 }
 

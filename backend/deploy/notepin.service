@@ -1,0 +1,23 @@
+[Unit]
+Description=NotePin backend (device ingest + dashboard)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=notepin
+WorkingDirectory=/opt/notepin/backend
+EnvironmentFile=-/opt/notepin/backend/.env
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=10
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/notepin/backend/data
+
+[Install]
+WantedBy=multi-user.target

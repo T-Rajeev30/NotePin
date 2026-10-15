@@ -1,9 +1,9 @@
 "use strict";
-const fs = require("fs");
 
 // Live speech-to-text over Deepgram's streaming WebSocket (Node 22+ global WebSocket).
 // Returns null when no API key is configured. Never throws into the recording path.
-function createTranscriber(cfg, txtPath, log) {
+// onSegment({ start, end, text }) fires per final result; times are seconds of audio fed so far.
+function createTranscriber(cfg, log, onSegment) {
   if (!cfg.deepgramKey) return null;
 
   const q = new URLSearchParams({
@@ -24,7 +24,6 @@ function createTranscriber(cfg, txtPath, log) {
   let queued = 0;
   const queue = [];
   const MAX_QUEUE = 16000 * 2 * 5; // buffer up to 5 s while the socket opens
-  const out = fs.createWriteStream(txtPath, { flags: "a" });
 
   const fail = (why) => {
     if (dead) return;
@@ -39,7 +38,6 @@ function createTranscriber(cfg, txtPath, log) {
     ]);
   } catch (err) {
     fail(err.message);
-    out.end();
     return null;
   }
 
@@ -72,7 +70,11 @@ function createTranscriber(cfg, txtPath, log) {
     const text = m.channel?.alternatives?.[0]?.transcript?.trim();
     if (!text) return;
     log(`Transcript: ${text}`);
-    out.write(`${text}\n`);
+    onSegment({
+      start: m.start || 0,
+      end: (m.start || 0) + (m.duration || 0),
+      text,
+    });
   });
 
   return {
@@ -95,13 +97,6 @@ function createTranscriber(cfg, txtPath, log) {
       }
       try {
         ws.close();
-      } catch {
-        /* ignore */
-      }
-      await new Promise((r) => out.end(r));
-      try {
-        if (fs.statSync(txtPath).size === 0) fs.unlinkSync(txtPath);
-        else log(`Transcript saved: ${txtPath}`);
       } catch {
         /* ignore */
       }
